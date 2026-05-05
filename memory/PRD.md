@@ -20,7 +20,7 @@ FlowVolume is a smart adaptive audio control mobile app (React Native Expo, Andr
 - `PUT  /api/settings/{user_id}` — patch settings (mode, sensitivity, smoothing, max_volume, window_level, ai_noise_detection, custom_mode, speed_volume_map).
 - `GET  /api/subscription/{user_id}` — get-or-create subscription (default tier=free).
 - `POST /api/subscription/activate` — body `{user_id, plan: trial|monthly|quarterly}`; sets tier=pro with expires_at.
-- `POST /api/subscription/cancel` — reverts to tier=free.
+- `POST /api/subscription/cancel` — body `{user_id}`; reverts to tier=free.
 - `POST /api/sessions` — log a ride session (mode, duration, avg/max speed, avg volume).
 - `GET  /api/sessions/{user_id}` — last 100 sessions.
 

@@ -7,7 +7,7 @@ import {
   ScrollView,
   Switch,
   TextInput,
-  Alert,
+  Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,6 +46,7 @@ export default function SettingsScreen() {
   const [userId, setUid] = useState<string | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [sub, setSub] = useState<Subscription | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -94,19 +95,13 @@ export default function SettingsScreen() {
     persist({ speed_volume_map: map });
   };
 
-  const handleCancel = async () => {
+  const handleCancel = () => setConfirmCancel(true);
+
+  const doCancel = async () => {
     if (!userId) return;
-    Alert.alert("Cancel Pro?", "You'll be moved back to Free.", [
-      { text: "Keep Pro", style: "cancel" },
-      {
-        text: "Cancel",
-        style: "destructive",
-        onPress: async () => {
-          const updated = await cancelPro(userId);
-          setSub(updated);
-        },
-      },
-    ]);
+    const updated = await cancelPro(userId);
+    setSub(updated);
+    setConfirmCancel(false);
   };
 
   if (!settings || !sub) {
@@ -304,6 +299,38 @@ export default function SettingsScreen() {
             </Text>
           </View>
         </ScrollView>
+
+        <Modal
+          transparent
+          visible={confirmCancel}
+          animationType="fade"
+          onRequestClose={() => setConfirmCancel(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalCard} testID="cancel-confirm-modal">
+              <Text style={styles.modalTitle}>Cancel Pro?</Text>
+              <Text style={styles.modalBody}>
+                You'll be moved back to Free. You can re-subscribe any time.
+              </Text>
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  testID="cancel-keep-btn"
+                  onPress={() => setConfirmCancel(false)}
+                  style={[styles.modalBtn, styles.modalBtnGhost]}
+                >
+                  <Text style={styles.modalBtnGhostText}>Keep Pro</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  testID="cancel-confirm-btn"
+                  onPress={doCancel}
+                  style={[styles.modalBtn, styles.modalBtnDanger]}
+                >
+                  <Text style={styles.modalBtnDangerText}>Cancel Pro</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -458,4 +485,39 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   arrow: { color: COLORS.muted, fontSize: 16 },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  modalTitle: { color: COLORS.text, fontSize: 18, fontWeight: "800" },
+  modalBody: { color: COLORS.muted, fontSize: 14, marginTop: 8, lineHeight: 20 },
+  modalActions: { flexDirection: "row", gap: 10, marginTop: 18 },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  modalBtnGhost: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  modalBtnGhostText: { color: COLORS.text, fontWeight: "700" },
+  modalBtnDanger: {
+    backgroundColor: "#FF6B6B",
+  },
+  modalBtnDangerText: { color: "#0A0A0A", fontWeight: "800" },
 });

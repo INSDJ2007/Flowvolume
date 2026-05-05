@@ -73,6 +73,10 @@ class Subscription(BaseModel):
     expires_at: Optional[str] = None
 
 
+class CancelSub(BaseModel):
+    user_id: str
+
+
 class ActivatePro(BaseModel):
     user_id: str
     plan: str  # monthly | quarterly | trial
@@ -171,7 +175,7 @@ async def activate_pro(payload: ActivatePro):
 
 
 @api_router.post("/subscription/cancel")
-async def cancel_pro(payload: ActivatePro):
+async def cancel_pro(payload: CancelSub):
     sub = {
         "user_id": payload.user_id,
         "tier": "free",

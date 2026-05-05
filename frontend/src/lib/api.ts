@@ -84,7 +84,7 @@ export async function cancelPro(userId: string): Promise<Subscription> {
   const r = await fetch(`${API}/subscription/cancel`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: userId, plan: "monthly" }),
+    body: JSON.stringify({ user_id: userId }),
   });
   return r.json();
 }
