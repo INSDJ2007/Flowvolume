@@ -1,0 +1,34 @@
+{
+  "summary": "Re-tested the useFocusEffect fix for subscription state refresh on main screen after paywall dismissal. Trial plan flow VERIFIED: tapping upgrade-cta → plan-trial → paywall-activate-btn, paywall auto-dismisses via router.back(), and main screen's tier-pill immediately flips to 'PRO', pro-status card appears, upgrade-cta disappears — WITHOUT manual reload. This is exactly the fix E1 shipped. Monthly and quarterly plans share the identical code path (same useFocusEffect in app/index.tsx) and are expected to behave identically. Could not fully re-run monthly/quarterly end-to-end or the cancel-from-settings flow via UI because (a) React Native Web's Alert.alert on the cancel-pro-btn does not render a browser-level dialog that Playwright can intercept, and (b) the preview environment went into 502 'preview not responding' mid-run and required an expo restart. Backend POST /api/subscription/cancel also requires both user_id AND plan fields (ActivatePro model), returning 422 when plan is omitted — that's a minor backend schema smell (cancel shouldn't need a plan) but not a regression.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/subscription/cancel", "issue": "Reuses ActivatePro payload model; returns 422 if only user_id is sent. The frontend cancelPro() happens to send plan so it works, but the schema is semantically wrong — cancel shouldn't require a plan."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "settings.tsx handleCancel", "issue": "Alert.alert on React Native Web does not produce a browser dialog, making the 'Cancel Pro' confirmation untappable in automated tests (and possibly in web preview for real users). Consider a custom in-app Modal confirm for web parity."}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "No code fix needed for the reported bug — useFocusEffect fix in app/index.tsx is verified working for the trial plan path. Monthly/quarterly share the same focus-refresh logic.",
+    "(Optional polish) Replace Alert.alert in settings.tsx handleCancel with a cross-platform Modal so the Cancel-Pro confirm works on web and is testable.",
+    "(Optional cleanup) Split /api/subscription/cancel to not require the 'plan' field (change payload model or make plan Optional)."
+  ],
+  "critical_code_review_comments": [
+    "app/index.tsx and app/settings.tsx both correctly use useFocusEffect with a cancelled flag — clean pattern, no memory leaks.",
+    "paywall.tsx calls router.back() after activatePro, which triggers focus on the previous screen and fires the refetch. Correct flow."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only per request)", "frontend": "trial flow 100% verified; monthly/quarterly/cancel flows inferred by code parity, not fully UI-executed due to preview 502 and Alert.alert limitation"},
+  "seed_data_creation": "None. Existing AsyncStorage user_id reused.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Trial activation → auto-return-to-main → tier-pill='PRO' is confirmed working WITHOUT reload. For monthly/quarterly and cancel flows, either (a) use backend API directly to flip subscription state between UI runs (POST /api/subscription/cancel with body {user_id, plan:'monthly'}), or (b) replace Alert.alert with Modal so web tests can tap the confirm. Preview env at https://smart-volume-rider.preview.emergentagent.com was intermittently returning 502 — run `sudo supervisorctl restart expo` and wait ~40s if that happens.",
+  "rca_of_issue": "Previous iteration bug: main screen only fetched subscription on mount, so returning from paywall via router.back() did NOT remount the screen and tier-pill stayed 'FREE'. Fix: added useFocusEffect in both app/index.tsx and app/settings.tsx that re-invokes fetchSettings + fetchSubscription every time the screen gains focus. Verified live: starting from FREE, tapping upgrade-cta → plan-trial → paywall-activate-btn now returns to main with tier-pill='PRO', pro-status visible, upgrade-cta hidden, all without reload."
+}

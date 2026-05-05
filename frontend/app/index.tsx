@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Slider from "@react-native-community/slider";
 import * as Location from "expo-location";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -95,6 +95,27 @@ export default function MainScreen() {
       setSub(sb);
     })();
   }, []);
+
+  // Refetch when screen regains focus (e.g., after paywall close)
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      let cancelled = false;
+      (async () => {
+        const [s, sb] = await Promise.all([
+          fetchSettings(userId),
+          fetchSubscription(userId),
+        ]);
+        if (!cancelled) {
+          setSettings(s);
+          setSub(sb);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [userId])
+  );
 
   // Pulse when active
   useEffect(() => {

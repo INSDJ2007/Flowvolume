@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Slider from "@react-native-community/slider";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   cancelPro,
   fetchSettings,
@@ -56,6 +56,26 @@ export default function SettingsScreen() {
       setSub(sb);
     })();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      let cancelled = false;
+      (async () => {
+        const [s, sb] = await Promise.all([
+          fetchSettings(userId),
+          fetchSubscription(userId),
+        ]);
+        if (!cancelled) {
+          setSettings(s);
+          setSub(sb);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [userId])
+  );
 
   const isPro = sub?.tier === "pro";
 
