@@ -1,0 +1,34 @@
+{
+  "summary": "Backend: 9/9 pytest passing (root, settings default+patch+custom map, subscription default, activate trial/monthly/quarterly with correct day deltas, invalid plan→400, cancel, sessions create+list; no _id leaks). Frontend: app loads on mobile viewport, header/speed display/START button/mode pills/sim-speed/window-section/upgrade-cta/free-note all render. START toggles Auto Volume ON, speed animates from 0→12, volume bar fills (22%), STOP resets. Paywall opens, plan-trial selectable, activate-btn calls API and dismisses. Settings opens, sensitivity/smoothing segments tappable, cancel-pro-btn shown (confirms backend tier=pro). BUG: tier-pill on main screen stays FREE and pro-status card never appears after paywall activation because index.tsx fetches subscription only once in useEffect([]) and never refetches when the paywall closes via router.back().",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "app/index.tsx", "issue": "After activating Pro on /paywall, returning to main screen still shows tier-pill='FREE' and upgrade-cta instead of pro-status card. Subscription is fetched only on mount and never refreshed on focus.", "testID": "tier-pill,pro-status,upgrade-cta", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Paywall activate → main screen state", "issue": "Main screen does not refetch /api/subscription/{user_id} when paywall dismisses; backend correctly sets tier=pro (verified: settings screen shows cancel-pro-btn) but main screen UI is stale.", "affected_testIDs": ["tier-pill", "pro-status", "upgrade-cta"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "global", "issue": "Deprecation warnings in expo logs: 'shadow*' and 'textShadow*' style props deprecated; should migrate to boxShadow/textShadow shorthand. Non-blocking."}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_flowvolume.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix index.tsx (and optionally settings.tsx) to refetch subscription/settings on screen focus. Use useFocusEffect from expo-router or @react-navigation/native so that returning from /paywall or /settings reflects updated tier and Pro features. Same applies to settings screen reading sub after returning.",
+    "Optional: also re-pull settings on focus to reflect changes made on /settings screen.",
+    "Consider migrating deprecated shadow*/textShadow* style props to boxShadow/textShadow."
+  ],
+  "critical_code_review_comments": [
+    "api.ts cancelPro sends plan='monthly' in body though backend ignores it; harmless but misleading.",
+    "index.tsx and settings.tsx both fetch subscription independently with no shared store → state drift between screens (root cause of tier-pill bug). A small zustand/context store or useFocusEffect refresh would resolve it.",
+    "server.py activate endpoint accepts plan via ActivatePro model but cancel reuses the same model requiring 'plan' field; consider a separate CancelPro model with only user_id."
+  ],
+  "updated_files": ["/app/backend/tests/test_flowvolume.py (new)"],
+  "success_rate": {"backend": "100%", "frontend": "~85% (1 HIGH state-sync bug)"},
+  "seed_data_creation": "Tests create ephemeral users prefixed TEST_ in mongo; no cleanup performed but isolated per UUID.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend is solid. After E1 fixes the focus-refresh bug in index.tsx, retest: activate trial in paywall → confirm tier-pill becomes 'PRO' and pro-status card appears on main screen without app reload. Also verify cancel-pro-btn flow flips tier-pill back to FREE on main after returning from settings.",
+  "rca_of_issue": "index.tsx line ~89-97: const [sub, setSub] = useState; useEffect(() => { fetchSubscription(id) }, []) runs only on mount. When user navigates to /paywall, activates Pro, and router.back() returns to /index, the component is still mounted so the effect doesn't rerun → sub state remains the pre-activation value. Fix: wrap subscription/settings fetch in useFocusEffect(useCallback(() => { ... }, [userId])) from expo-router."
+}
