@@ -59,6 +59,29 @@ const MODES: { key: "Cycling" | "Bike" | "Driving"; icon: any; label: string }[]
   { key: "Driving", icon: "car-sport", label: "Driving" },
 ];
 
+function ProMetric({
+  icon,
+  label,
+  value,
+  unit,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  unit: string;
+}) {
+  return (
+    <View style={styles.proMetric}>
+      <Ionicons name={icon} size={16} color={COLORS.neon} />
+      <Text style={styles.proMetricLabel}>{label}</Text>
+      <View style={styles.proMetricValueRow}>
+        <Text style={styles.proMetricValue}>{value}</Text>
+        <Text style={styles.proMetricUnit}>{unit}</Text>
+      </View>
+    </View>
+  );
+}
+
 export default function MainScreen() {
   const router = useRouter();
   const [userId, setUid] = useState<string | null>(null);
@@ -352,6 +375,13 @@ export default function MainScreen() {
                 </Text>
               </View>
               <TouchableOpacity
+                testID="open-history-btn"
+                onPress={() => router.push("/history")}
+                style={styles.iconBtn}
+              >
+                <Ionicons name="time-outline" size={22} color={COLORS.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
                 testID="open-settings-btn"
                 onPress={() => router.push("/settings")}
                 style={styles.iconBtn}
@@ -532,6 +562,40 @@ export default function MainScreen() {
               />
             </View>
           </View>
+
+          {/* Pro live feedback panel */}
+          {isPro && active && (
+            <View style={styles.proPanel} testID="pro-feedback-panel">
+              <View style={styles.proPanelHead}>
+                <View style={styles.liveDot} />
+                <Text style={styles.proPanelTitle}>LIVE FEEDBACK</Text>
+              </View>
+              <View style={styles.proPanelGrid}>
+                <ProMetric
+                  icon="speedometer"
+                  label="Speed"
+                  value={`${Math.round(speed)}`}
+                  unit="km/h"
+                />
+                <ProMetric
+                  icon="mic"
+                  label="Noise"
+                  value={
+                    settings.ai_noise_detection
+                      ? `${Math.round(noiseDb)}`
+                      : "—"
+                  }
+                  unit="dB"
+                />
+                <ProMetric
+                  icon="volume-high"
+                  label="Volume"
+                  value={`${Math.round(volume)}`}
+                  unit="%"
+                />
+              </View>
+            </View>
+          )}
 
           {/* Free vs Pro CTA */}
           {!isPro ? (
@@ -815,4 +879,61 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   adText: { color: "#0A0A0A", fontWeight: "700" },
+
+  proPanel: {
+    marginTop: 22,
+    backgroundColor: "rgba(0,229,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(0,229,255,0.3)",
+    borderRadius: 18,
+    padding: 16,
+  },
+  proPanelHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.neon,
+    shadowColor: COLORS.neon,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+  },
+  proPanelTitle: {
+    color: COLORS.neon,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 2,
+  },
+  proPanelGrid: { flexDirection: "row", gap: 10 },
+  proMetric: {
+    flex: 1,
+    backgroundColor: "rgba(10,10,10,0.5)",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "flex-start",
+    gap: 6,
+  },
+  proMetricLabel: {
+    color: COLORS.textMuted,
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  proMetricValueRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 3,
+  },
+  proMetricValue: { color: COLORS.text, fontSize: 22, fontWeight: "800" },
+  proMetricUnit: {
+    color: COLORS.neon2,
+    fontSize: 11,
+    fontWeight: "700",
+  },
 });

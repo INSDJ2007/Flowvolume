@@ -16,6 +16,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="history" />
       </Stack>
     </GestureHandlerRootView>
   );
