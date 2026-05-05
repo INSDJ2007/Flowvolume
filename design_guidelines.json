@@ -1,0 +1,174 @@
+{
+  "project": "FlowVolume",
+  "app_type": "React Native Expo",
+  "design_philosophy": {
+    "archetype": "Archetype 7 (Electric & Neon) + Archetype 2 (Performance Pro)",
+    "theme": "dark",
+    "core_vibe": "Futuristic, smooth, highly responsive, one-hand usability, zero clutter.",
+    "e1_rationale": "Using a performance-driven 'Tactical Neon' design. The dark background ensures zero glare during night rides, while the neon #00E5FF provides high-contrast peripheral visibility without forcing the user to focus on the screen."
+  },
+  "colors": {
+    "background_gradient": {
+      "start": "#0A0A0A",
+      "end": "#121826"
+    },
+    "surface": {
+      "default": "#1E1E1E",
+      "glass": "rgba(30, 30, 38, 0.6)",
+      "border": "rgba(255, 255, 255, 0.05)"
+    },
+    "brand": {
+      "primary_neon": "#00E5FF",
+      "secondary_neon": "#3A86FF"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "rgba(255, 255, 255, 0.8)",
+      "muted": "rgba(255, 255, 255, 0.5)"
+    },
+    "status": {
+      "active_glow": "rgba(0, 229, 255, 0.4)",
+      "inactive": "#2A2A2A"
+    }
+  },
+  "typography": {
+    "primary": {
+      "family": "Outfit, sans-serif",
+      "usage": "Speedometer numbers, large toggle text, Paywall headers.",
+      "e1_note": "User requested Poppins or Inter. I have selected Inter for all data and body text. However, for the massive Speed numbers, 'Outfit' is specified to bring the 'Futuristic/Neon' velocity feel that Poppins lacks. If strict adherence is needed, use Poppins Bold for headings."
+    },
+    "secondary": {
+      "family": "Inter, sans-serif",
+      "usage": "Labels, Status text, Settings, Body."
+    },
+    "scales": {
+      "speedometer": {
+        "fontSize": 96,
+        "fontWeight": "800",
+        "letterSpacing": -2
+      },
+      "h1": {
+        "fontSize": 32,
+        "fontWeight": "700",
+        "letterSpacing": -0.5
+      },
+      "h2": {
+        "fontSize": 24,
+        "fontWeight": "600"
+      },
+      "body": {
+        "fontSize": 16,
+        "fontWeight": "500"
+      },
+      "label": {
+        "fontSize": 13,
+        "fontWeight": "400",
+        "letterSpacing": 1,
+        "textTransform": "uppercase"
+      }
+    }
+  },
+  "layout_and_spacing": {
+    "screen_padding": 24,
+    "border_radius": {
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "pill": 9999
+    },
+    "alignment": "Vertical-center dominance for driving focus. Important elements must be reachable with one thumb in the lower 60% of the screen."
+  },
+  "components": {
+    "speed_display": {
+      "container": "Top section, flex align center",
+      "value_style": "Outfit 96px, #FFFFFF, subtle textShadow for glow",
+      "unit_style": "Inter 20px, #3A86FF, uppercase",
+      "label": "Current Speed (Inter 13px, secondary text)"
+    },
+    "main_toggle_button": {
+      "size": "200x200px circular",
+      "off_state": {
+        "background": "#1E1E1E",
+        "border": "2px solid rgba(255,255,255,0.1)",
+        "text": "START (White)",
+        "shadow": "none"
+      },
+      "on_state": {
+        "background": "rgba(0, 229, 255, 0.1)",
+        "border": "2px solid #00E5FF",
+        "text": "STOP (#00E5FF)",
+        "shadow": "0px 0px 30px rgba(0, 229, 255, 0.4)"
+      },
+      "animation": "Continuous subtle scale pulse (0.98 to 1.02) when ON. Ripple effect on press."
+    },
+    "mode_selector": {
+      "type": "Segmented Control / Horizontal Pills",
+      "active_pill": "Background: #00E5FF, Text: #0A0A0A, Font: Inter 14px Bold",
+      "inactive_pill": "Background: transparent, Border: 1px solid rgba(255,255,255,0.2), Text: rgba(255,255,255,0.8)"
+    },
+    "window_level_slider": {
+      "visibility": "Only visible when Driving mode is active",
+      "track_inactive": "#2A2A2A",
+      "track_active": "LinearGradient #3A86FF to #00E5FF",
+      "thumb": "24x24px, #FFFFFF with #00E5FF glow shadow",
+      "label": "Window Level: 0-100%"
+    },
+    "glass_panel": {
+      "background": "rgba(30, 30, 38, 0.6)",
+      "backdropFilter": "blur(20px)",
+      "border": "1px solid rgba(255, 255, 255, 0.05)",
+      "borderRadius": 24,
+      "padding": 20
+    }
+  },
+  "screens": {
+    "Main": {
+      "layout": "Column layout, spaced out. Top: Speed. Center: Giant Toggle. Bottom: Mode Selector, Slider (conditional), Status Text ('Auto Volume: ON', 'Free Mode (Ad every 15 min)').",
+      "background": "LinearGradient from #0A0A0A to #121826."
+    },
+    "Settings_Pro": {
+      "layout": "List layout using Glass Panels.",
+      "items": [
+        "Sensitivity (Slider)",
+        "Smoothing (Toggle)",
+        "Max Volume Limiter (Slider)",
+        "Custom Speed-to-Volume mapping graph (Interactive Chart area)"
+      ],
+      "real_time_feedback_panel": {
+        "position": "Sticky bottom or top widget",
+        "content": "Mini dashboard showing Speed, Noise Level (dB), Current Volume %"
+      }
+    },
+    "Paywall": {
+      "background": "Image overlay with deep #0A0A0A gradient fade at bottom.",
+      "content": "Large bold value prop ('Unleash Pro Flow'), Glassmorphism pricing cards.",
+      "pricing_cards": {
+        "monthly": "₹29/1 month",
+        "quarterly": "₹79/3 months",
+        "trial_note": "3-day free trial"
+      },
+      "cta_button": "Full width pill, background #00E5FF, text #0A0A0A, 'Start Free Trial'"
+    }
+  },
+  "motion_and_animations": {
+    "speed_counter": "Reanimated smoothly interpolating numbers to avoid jitter.",
+    "toggle_pulse": "React Native Reanimated repeating pulse (scale & opacity) on the shadow wrapper when active.",
+    "transitions": "Fade-in and slide-up for mode switching (e.g., when 'Window Level' slider appears).",
+    "press_interactions": "All touchables scale down to 0.95 on press-in and restore on press-out."
+  },
+  "testing": {
+    "requirements": "ALL interactive elements (buttons, sliders, toggles, mode pills) MUST include a 'data-testid' attribute (e.g., data-testid='main-start-toggle', data-testid='mode-cycling-btn')."
+  },
+  "media": {
+    "paywall_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1771616886034-ebc77c321213?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxjeWNsaXN0JTIwcmlkaW5nJTIwbmlnaHQlMjBkYXJrJTIwYmx1cnxlbnwwfHx8fDE3Nzc5NjM0OTZ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Night cyclist in motion, perfect dark base for Paywall contextual background."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1759339645839-ce0b695c00b5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxkcml2aW5nJTIwbmlnaHQlMjBkYXNoYm9hcmQlMjBjaXR5JTIwYmx1cnxlbnwwfHx8fDE3Nzc5NjM1MDZ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Blurred car lights at night, suitable for driving mode context or alternate paywall background."
+      }
+    ]
+  }
+}
