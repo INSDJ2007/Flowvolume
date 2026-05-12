@@ -6,12 +6,14 @@ const PROD = {
   androidAppId: "ca-app-pub-2091696057854733~6814859397",
   interstitialAdUnitId: "ca-app-pub-2091696057854733/3589930257",
   rewardedAdUnitId: "ca-app-pub-2091696057854733/3677661798",
+  bannerAdUnitId: "ca-app-pub-2091696057854733/2173008435",
 };
 
 const TEST = {
   androidAppId: "ca-app-pub-3940256099942544~3347511713",
   interstitialAdUnitId: "ca-app-pub-3940256099942544/1033173712",
   rewardedAdUnitId: "ca-app-pub-3940256099942544/5224354917",
+  bannerAdUnitId: "ca-app-pub-3940256099942544/6300978111",
 };
 
 // In dev (Expo Go / dev build), use Google test ads to avoid policy violations.

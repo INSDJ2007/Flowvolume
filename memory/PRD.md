@@ -43,9 +43,10 @@ FlowVolume is a smart adaptive audio control mobile app (React Native Expo, Andr
 - **Android App ID**: `ca-app-pub-2091696057854733~6814859397`
 - **Interstitial Ad Unit ID (production)**: `ca-app-pub-2091696057854733/3589930257`
 - **Rewarded Ad Unit ID (production)**: `ca-app-pub-2091696057854733/3677661798`
-- **Test IDs** (auto-used when `__DEV__===true`): interstitial `ca-app-pub-3940256099942544/1033173712`, rewarded `ca-app-pub-3940256099942544/5224354917`
+- **Banner Ad Unit ID (production)**: `ca-app-pub-2091696057854733/2173008435`
+- **Test IDs** (auto-used when `__DEV__===true`): interstitial `…/1033173712`, rewarded `…/5224354917`, banner `…/6300978111`
 - **Interstitial behavior**: Free-tier users get an interstitial every 15 minutes while a session is active. Pro users see no ads.
-- **Rewarded behavior**: A "Watch Ad · Get 5 min Ad-Free" CTA is shown to free users. When the user watches the rewarded ad to completion, the next interstitial is suppressed for 5 minutes (i.e. the 15-min interstitial effectively becomes 20 min for that cycle). An "Ad-Free · Xm Ys" countdown badge replaces the CTA during the grace period.
-- **Platform stub**: `src/lib/adMob.web.ts` is a no-op for web preview; `src/lib/adMob.native.ts` is the real implementation. Metro picks the right file per platform.
-- **Web/Expo Go fallback**: Tapping "Watch Ad" on web simulates the reward (5-min grace period) so the UX flow is testable without a native build.
+- **Rewarded behavior**: A "Watch Ad · Get 5 min Ad-Free" CTA is shown to free users. Watching the rewarded ad to completion grants a 5-min grace period during which both interstitials *and* the persistent banner are suppressed. An "Ad-Free · Xm Ys" countdown badge replaces the CTA.
+- **Banner behavior**: A persistent `ANCHORED_ADAPTIVE_BANNER` is rendered near the bottom of the main screen for free users (hidden during the 5-min grace period).
+- **Platform stubs**: `src/lib/adMob.web.ts` and `src/components/AdBanner.web.tsx` are no-ops for web preview; `.native.ts` / `.native.tsx` are the real implementations. Metro picks the right file per platform.
 - **Real ads only render in a standalone/dev APK** (Emergent publish or `eas build`).

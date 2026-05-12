@@ -723,6 +723,9 @@ export default function MainScreen() {
               <Text style={styles.adText}>Sponsored break · Upgrade to remove ads</Text>
             </View>
           )}
+
+          {/* Persistent banner ad for free users (hidden during ad-free grace) */}
+          {!isPro && adFreeCountdown === 0 && <AdBanner />}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
