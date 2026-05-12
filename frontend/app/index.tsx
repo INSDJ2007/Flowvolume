@@ -38,6 +38,9 @@ import {
   modeProfile,
   smooth,
 } from "../src/lib/volume";
+import { adMob } from "../src/lib/adMob";
+import { AD_INTERVAL_MS, REWARD_GRACE_MS } from "../src/lib/adsConfig";
+import AdBanner from "../src/components/AdBanner";
 
 const COLORS = {
   bgStart: "#0A0A0A",
@@ -95,6 +98,9 @@ export default function MainScreen() {
   const [simSpeed, setSimSpeed] = useState(15);
   const [usingGps, setUsingGps] = useState(false);
   const [adNotice, setAdNotice] = useState(false);
+  const [adFreeUntil, setAdFreeUntil] = useState<number>(0);
+  const [adFreeCountdown, setAdFreeCountdown] = useState<number>(0);
+  const [rewardedReady, setRewardedReady] = useState(false);
   const sessionStats = useRef({
     startedAt: "",
     samples: 0,
