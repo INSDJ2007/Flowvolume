@@ -37,3 +37,11 @@ FlowVolume is a smart adaptive audio control mobile app (React Native Expo, Andr
 - **AI Noise Detection is SIMULATED**: in this MVP, dB values are synthesized from mode + window level + jitter to demonstrate the smart-volume math. A native build would use `expo-av` Recording metering to sample real ambient noise every 30–60s.
 - **Paywall is MOCKED**: tapping Activate flips the user's `subscription.tier` to `pro` with no real billing. Stripe/Razorpay can be integrated later via `integration_playbook_expert_v2`.
 - **Persistent notification with quick controls is NOT implemented** in this MVP (would require a dev build with `expo-notifications` and a foreground service module).
+
+## AdMob (Google Mobile Ads)
+- **Package**: `react-native-google-mobile-ads@16.3.3`, configured via `app.json` plugin.
+- **Android App ID**: `ca-app-pub-2091696057854733~6814859397`
+- **Interstitial Ad Unit ID (production)**: `ca-app-pub-2091696057854733/3589930257`
+- **Test IDs** (auto-used when `__DEV__===true`): `ca-app-pub-3940256099942544/1033173712` (interstitial)
+- **Behavior**: Free-tier users get an interstitial every 15 minutes while a session is active. Pro users see no ads. The wrapper at `src/lib/adMob.ts` gracefully no-ops on web/Expo Go and falls back to the in-app "Sponsored break" banner so the preview still works.
+- **Real ads only render in a standalone/dev APK** (Emergent publish or `eas build`). In Expo Go you'll just see the placeholder banner.

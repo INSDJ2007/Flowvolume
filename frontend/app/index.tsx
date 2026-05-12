@@ -253,16 +253,29 @@ export default function MainScreen() {
     return () => clearInterval(id);
   }, [active, settings, sub?.tier, simSpeed, rawSpeed, usingGps, noiseDb]);
 
-  // Ad timer for free users every 15 min (60s in demo for visibility)
+  // Ad timer for free users every 15 min (60s in demo for visibility).
+  // Real AdMob interstitial when native module is available; falls back to
+  // the in-app placeholder banner on web/Expo Go.
   useEffect(() => {
     if (!active || sub?.tier === "pro") return;
-    const t = setInterval(() => {
-      setAdNotice(true);
+
+    // Preload an interstitial so it's ready when the timer fires.
+    adMob.loadInterstitial().catch(() => {});
+
+    const intervalMs = adMob.isAvailable() ? AD_INTERVAL_MS : 60_000;
+    const t = setInterval(async () => {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       } catch {}
-      setTimeout(() => setAdNotice(false), 4000);
-    }, 60_000);
+      const shown = await adMob.showInterstitial();
+      if (!shown) {
+        // Fallback: show the in-app placeholder banner for 4s.
+        setAdNotice(true);
+        setTimeout(() => setAdNotice(false), 4000);
+        // Try to preload for next round.
+        adMob.loadInterstitial().catch(() => {});
+      }
+    }, intervalMs);
     return () => clearInterval(t);
   }, [active, sub?.tier]);
 
