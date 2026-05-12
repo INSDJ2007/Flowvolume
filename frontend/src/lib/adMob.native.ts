@@ -13,6 +13,9 @@ class AdMobManager {
   private interstitial: any = null;
   private loaded = false;
   private loading = false;
+  private rewarded: any = null;
+  private rewardedLoaded = false;
+  private rewardedLoading = false;
   private closeListeners: Listener[] = [];
   private available = true;
   private nativeModule: any = null;
@@ -109,6 +112,74 @@ class AdMobManager {
     return () => {
       this.closeListeners = this.closeListeners.filter((l) => l !== fn);
     };
+  }
+
+  async loadRewarded() {
+    if (!this.available || this.rewardedLoaded || this.rewardedLoading) return;
+    this.rewardedLoading = true;
+    try {
+      const { RewardedAd, RewardedAdEventType, AdEventType } = this.nativeModule;
+      const ad = RewardedAd.createForAdRequest(AD_CONFIG.rewardedAdUnitId, {
+        requestNonPersonalizedAdsOnly: false,
+      });
+      ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+        this.rewardedLoaded = true;
+        this.rewardedLoading = false;
+      });
+      ad.addAdEventListener(AdEventType.ERROR, (e: any) => {
+        console.warn("Rewarded error:", e);
+        this.rewardedLoaded = false;
+        this.rewardedLoading = false;
+        this.rewarded = null;
+      });
+      ad.addAdEventListener(AdEventType.CLOSED, () => {
+        this.rewardedLoaded = false;
+        this.rewarded = null;
+        // preload next
+        this.loadRewarded().catch(() => {});
+      });
+      this.rewarded = ad;
+      ad.load();
+    } catch (e) {
+      console.warn("loadRewarded failed:", e);
+      this.rewardedLoading = false;
+    }
+  }
+
+  isRewardedReady() {
+    return this.available && this.rewardedLoaded && !!this.rewarded;
+  }
+
+  /**
+   * Shows a rewarded ad. Resolves to true if the user fully watched and earned
+   * the reward; false otherwise (skipped, error, or native module unavailable).
+   */
+  async showRewarded(): Promise<boolean> {
+    if (!this.isRewardedReady()) return false;
+    return new Promise<boolean>((resolve) => {
+      let earned = false;
+      try {
+        const { RewardedAdEventType, AdEventType } = this.nativeModule;
+        const unsubEarn = this.rewarded.addAdEventListener(
+          RewardedAdEventType.EARNED_REWARD,
+          () => {
+            earned = true;
+          }
+        );
+        const unsubClose = this.rewarded.addAdEventListener(
+          AdEventType.CLOSED,
+          () => {
+            unsubEarn?.();
+            unsubClose?.();
+            resolve(earned);
+          }
+        );
+        this.rewarded.show();
+      } catch (e) {
+        console.warn("showRewarded failed:", e);
+        resolve(false);
+      }
+    });
   }
 }
 

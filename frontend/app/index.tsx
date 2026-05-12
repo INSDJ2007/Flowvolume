@@ -256,6 +256,7 @@ export default function MainScreen() {
   // Ad timer for free users every 15 min (60s in demo for visibility).
   // Real AdMob interstitial when native module is available; falls back to
   // the in-app placeholder banner on web/Expo Go.
+  // Skipped while inside a rewarded-ad grace period (adFreeUntil > now).
   useEffect(() => {
     if (!active || sub?.tier === "pro") return;
 
@@ -264,6 +265,7 @@ export default function MainScreen() {
 
     const intervalMs = adMob.isAvailable() ? AD_INTERVAL_MS : 60_000;
     const t = setInterval(async () => {
+      if (Date.now() < adFreeUntil) return; // user is in ad-free grace period
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       } catch {}
@@ -272,12 +274,52 @@ export default function MainScreen() {
         // Fallback: show the in-app placeholder banner for 4s.
         setAdNotice(true);
         setTimeout(() => setAdNotice(false), 4000);
-        // Try to preload for next round.
         adMob.loadInterstitial().catch(() => {});
       }
     }, intervalMs);
     return () => clearInterval(t);
-  }, [active, sub?.tier]);
+  }, [active, sub?.tier, adFreeUntil]);
+
+  // Preload the rewarded ad whenever the user is free
+  useEffect(() => {
+    if (sub?.tier === "pro") return;
+    adMob.loadRewarded().catch(() => {});
+    const poll = setInterval(() => setRewardedReady(adMob.isRewardedReady()), 1500);
+    return () => clearInterval(poll);
+  }, [sub?.tier]);
+
+  // Countdown ticker for the ad-free grace badge
+  useEffect(() => {
+    if (adFreeUntil <= Date.now()) {
+      setAdFreeCountdown(0);
+      return;
+    }
+    const t = setInterval(() => {
+      const remaining = Math.max(0, adFreeUntil - Date.now());
+      setAdFreeCountdown(remaining);
+      if (remaining <= 0) clearInterval(t);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [adFreeUntil]);
+
+  const handleWatchRewarded = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+    // Ensure ad is loaded
+    if (!adMob.isRewardedReady()) {
+      await adMob.loadRewarded();
+    }
+    if (!adMob.isAvailable() || !adMob.isRewardedReady()) {
+      // Web/Expo Go fallback: simulate the reward so the UX flow is testable.
+      setAdFreeUntil(Date.now() + REWARD_GRACE_MS);
+      return;
+    }
+    const earned = await adMob.showRewarded();
+    if (earned) {
+      setAdFreeUntil(Date.now() + REWARD_GRACE_MS);
+    }
+  };
 
   const handleToggle = async () => {
     if (!settings) return;
@@ -641,11 +683,38 @@ export default function MainScreen() {
             </View>
           )}
 
-          {/* Free mode ad label */}
+          {/* Free mode ad label + Rewarded CTA */}
           {!isPro && (
-            <Text style={styles.freeNote} testID="free-note">
-              Free Mode · Ad every 15 min
-            </Text>
+            <>
+              {adFreeCountdown > 0 ? (
+                <View style={styles.adFreeBadge} testID="ad-free-badge">
+                  <Ionicons name="shield-checkmark" size={16} color={COLORS.neon} />
+                  <Text style={styles.adFreeText}>
+                    Ad-Free · {Math.ceil(adFreeCountdown / 1000 / 60)}m{" "}
+                    {Math.floor((adFreeCountdown / 1000) % 60)
+                      .toString()
+                      .padStart(2, "0")}
+                    s
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  testID="watch-rewarded-btn"
+                  onPress={handleWatchRewarded}
+                  activeOpacity={0.85}
+                  style={styles.rewardedBtn}
+                  disabled={!rewardedReady && adMob.isAvailable()}
+                >
+                  <Ionicons name="play-circle" size={18} color="#0A0A0A" />
+                  <Text style={styles.rewardedBtnText}>
+                    Watch Ad · Get 5 min Ad-Free
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <Text style={styles.freeNote} testID="free-note">
+                Free Mode · Ad every 15 min
+              </Text>
+            </>
           )}
 
           {adNotice && !isPro && (
@@ -949,4 +1018,35 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
   },
+
+  rewardedBtn: {
+    marginTop: 16,
+    backgroundColor: COLORS.neon,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: COLORS.neon,
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+  },
+  rewardedBtnText: { color: "#0A0A0A", fontWeight: "800", fontSize: 14, letterSpacing: 0.3 },
+
+  adFreeBadge: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,229,255,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(0,229,255,0.4)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  adFreeText: { color: COLORS.neon, fontWeight: "800", fontSize: 13, letterSpacing: 1 },
 });

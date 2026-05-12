@@ -42,6 +42,10 @@ FlowVolume is a smart adaptive audio control mobile app (React Native Expo, Andr
 - **Package**: `react-native-google-mobile-ads@16.3.3`, configured via `app.json` plugin.
 - **Android App ID**: `ca-app-pub-2091696057854733~6814859397`
 - **Interstitial Ad Unit ID (production)**: `ca-app-pub-2091696057854733/3589930257`
-- **Test IDs** (auto-used when `__DEV__===true`): `ca-app-pub-3940256099942544/1033173712` (interstitial)
-- **Behavior**: Free-tier users get an interstitial every 15 minutes while a session is active. Pro users see no ads. The wrapper at `src/lib/adMob.ts` gracefully no-ops on web/Expo Go and falls back to the in-app "Sponsored break" banner so the preview still works.
-- **Real ads only render in a standalone/dev APK** (Emergent publish or `eas build`). In Expo Go you'll just see the placeholder banner.
+- **Rewarded Ad Unit ID (production)**: `ca-app-pub-2091696057854733/3677661798`
+- **Test IDs** (auto-used when `__DEV__===true`): interstitial `ca-app-pub-3940256099942544/1033173712`, rewarded `ca-app-pub-3940256099942544/5224354917`
+- **Interstitial behavior**: Free-tier users get an interstitial every 15 minutes while a session is active. Pro users see no ads.
+- **Rewarded behavior**: A "Watch Ad · Get 5 min Ad-Free" CTA is shown to free users. When the user watches the rewarded ad to completion, the next interstitial is suppressed for 5 minutes (i.e. the 15-min interstitial effectively becomes 20 min for that cycle). An "Ad-Free · Xm Ys" countdown badge replaces the CTA during the grace period.
+- **Platform stub**: `src/lib/adMob.web.ts` is a no-op for web preview; `src/lib/adMob.native.ts` is the real implementation. Metro picks the right file per platform.
+- **Web/Expo Go fallback**: Tapping "Watch Ad" on web simulates the reward (5-min grace period) so the UX flow is testable without a native build.
+- **Real ads only render in a standalone/dev APK** (Emergent publish or `eas build`).
